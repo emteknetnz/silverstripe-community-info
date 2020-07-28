@@ -253,6 +253,7 @@ function fetchGraphQL($query, $account, $repo, $extra) {
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:28.0) Gecko/20100101 Firefox/28.0'
     ]);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     waitUntilCanFetch();
     $s = curl_exec($ch);
     curl_close($ch);
@@ -298,6 +299,7 @@ function fetchRest($remotePath, $account, $repo, $extra) {
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:28.0) Gecko/20100101 Firefox/28.0'
     ]);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     waitUntilCanFetch();
     $s = curl_exec($ch);
     curl_close($ch);
