@@ -103,7 +103,7 @@ $modules = [
             'silverstripe-login-forms',
             'silverstripe-security-extensions',
             // not in commercially supported list, though is in cwp
-            'silverstripe/silverstripe-versionfeed',
+            'silverstripe-versionfeed',
         ],
         'silverstripe-themes' => [
             'silverstripe-simple',
