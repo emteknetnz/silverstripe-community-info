@@ -104,7 +104,7 @@ function olderThanTwoWeeks($timestamp) {
 function olderThanOneMonth($timestamp) {
     $dateTime = parseTimestamp($timestamp);
     $diff = $dateTime->diff(new DateTime());
-    return $diff->y > 0 || $diff->m > 1;
+    return $diff->y > 0 || $diff->m > 0;
 }
 
 function olderThanThreeMonths($timestamp) {
