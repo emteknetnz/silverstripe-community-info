@@ -92,37 +92,37 @@ function parseTimestamp($timestamp) {
 function olderThanOneWeek($timestamp) {
     $dateTime = parseTimestamp($timestamp);
     $diff = $dateTime->diff(new DateTime());
-    return $diff->y > 0 || $diff->m > 0 || $diff->d > 7;
+    return $diff->y >= 1 || $diff->m >= 1 || $diff->d >= 7;
 }
 
 function olderThanTwoWeeks($timestamp) {
     $dateTime = parseTimestamp($timestamp);
     $diff = $dateTime->diff(new DateTime());
-    return $diff->y > 0 || $diff->m > 0 || $diff->d > 14;
+    return $diff->y >= 1 || $diff->m >= 1 || $diff->d >= 14;
 }
 
 function olderThanOneMonth($timestamp) {
     $dateTime = parseTimestamp($timestamp);
     $diff = $dateTime->diff(new DateTime());
-    return $diff->y > 0 || $diff->m > 0;
+    return $diff->y >= 1 || $diff->m >= 1;
 }
 
 function olderThanThreeMonths($timestamp) {
     $dateTime = parseTimestamp($timestamp);
     $diff = $dateTime->diff(new DateTime());
-    return $diff->y > 0 || $diff->m > 2;
+    return $diff->y >= 1 || $diff->m >= 3;
 }
 
 function olderThanSixMonths($timestamp) {
     $dateTime = parseTimestamp($timestamp);
     $diff = $dateTime->diff(new DateTime());
-    return $diff->y > 0 || $diff->m > 5;
+    return $diff->y >= 1 || $diff->m >= 6;
 }
 
 function olderThanOneYear($timestamp) {
     $dateTime = parseTimestamp($timestamp);
     $diff = $dateTime->diff(new DateTime());
-    return $diff->y > 0;
+    return $diff->y >= 1;
 }
 
 $lastRequestTS = 0;
