@@ -304,7 +304,7 @@ function fetchRest($remotePath, $account, $repo, $extra) {
     $s = curl_exec($ch);
     curl_close($ch);
     $json = json_decode($s);
-    if (!is_array($json)) {
+    if (!is_array($json) && !is_object($json)) {
         echo "Error fetching data\n";
         return null;
     } else {
