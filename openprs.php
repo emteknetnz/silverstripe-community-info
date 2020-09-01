@@ -57,6 +57,7 @@ function buildOpenPRsQuery($account, $repo) {
           nodes {
             ... on PullRequest {
               title
+              body
               url
               author {
                 login
@@ -223,12 +224,12 @@ function deriveOpenPRDataRow($pr, $moduleType, $account, $repo) {
     // ask to close
     $authorType = deriveUserType($author);
     if (in_array($authorType, ['core_commiters', 'product_devs', 'pux'])) {
-        $stalePR = olderThanOneYear($lastCommitAt);
+        $stalePR = olderThanOneMonth($lastCommitAt);
     } elseif (in_array($authorType, ['dependabot', 'me'])) {
         $stalePR = false;
     } else {
         // bespoke, tsp_ops, other
-        $stalePR = olderThanSixMonths($lastCommitAt);
+        $stalePR = olderThanOneMonth($lastCommitAt);
     }
     $askToClose = false;
     if (!$teamActive && !$lookingGood) {
@@ -247,6 +248,34 @@ function deriveOpenPRDataRow($pr, $moduleType, $account, $repo) {
         in_array(deriveUserType($lastComment->author->login) ?? '', $a) &&
         olderThanTwoWeeks($lastComment->createdAt);
     
+    // run php issues.php first to ensure you have json around
+    $issue = null;
+    $issueImpact = '';
+    if (preg_match('#https://github.com/([^/]+)/([^/]+)/issues/([0-9]+)#', $pr->body ?? '', $m)) {
+        array_shift($m);
+        list($account, $repo, $id) = $m;
+        $filename = "json/rest-{$account}-$repo-issues-open.json";
+        if (file_exists($filename)) {
+            echo "Using local data for $account/$repo issues-open\n";
+            $issues = json_decode(file_get_contents($filename));
+            foreach ($issues as $_issue2) {
+                if ($_issue2->number == $id) {
+                    $issue = $_issue2;
+                    break;
+                }
+            }
+        } else {
+            echo "run `php issues.php` first so that you have open issues json\n";
+        }
+    }
+
+    // issue impact
+    foreach ($issue->labels ?? [] as $label) {
+        if (preg_match('#^impact/(.+)$#', $label->name, $m)) {
+            $issueImpact = $m[1];
+        }
+    }
+
     $productTeams = ['product_devs', 'pux', 'tsp_ops', 'me', 'dependabot'];
 
     $row = [
@@ -279,6 +308,9 @@ function deriveOpenPRDataRow($pr, $moduleType, $account, $repo) {
         'lastCommitAtNZ' => timestampToNZDate($lastCommitAt),
         'url' => $pr->url,
         'urlFiles' => $pr->url . '/files',
+        'issueTitle' => $issue->title ?? '',
+        'issueUrl' => $issue->html_url ?? '',
+        'issueImpact' => $issueImpact,
     ];
     return $row;
 }
@@ -310,6 +342,9 @@ function createOpenPRsCsv($data) {
         'justClose',
         'url',
         'urlFiles',
+        'issueTitle',
+        'issueUrl',
+        'issueImpact',
     ];
     createCsv('csv/openprs.csv', $data, $fields);
 }
@@ -325,5 +360,6 @@ if (!$useLocalData) {
     deleteJsonFiles('/graphql\-[a-z\-]+\-openprs\.json/');
 }
 
+echo "\n=== Ensure you run `php issues.php` first to get up to date issue data linked to PRs ===\n\n";
 $data = fetchOpenPRsData();
 createOpenPRsCsv($data);
