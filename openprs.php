@@ -248,33 +248,51 @@ function deriveOpenPRDataRow($pr, $moduleType, $account, $repo) {
         in_array(deriveUserType($lastComment->author->login) ?? '', $a) &&
         olderThanTwoWeeks($lastComment->createdAt);
     
-    // run php issues.php first to ensure you have json around
-    $issue = null;
-    $issueImpact = '';
-    if (preg_match('#https://github.com/([^/]+)/([^/]+)/issues/([0-9]+)#', $pr->body ?? '', $m)) {
-        array_shift($m);
-        list($account, $repo, $id) = $m;
-        $filename = "json/rest-{$account}-$repo-issues-open.json";
-        if (file_exists($filename)) {
-            echo "Using local data for $account/$repo issues-open\n";
-            $issues = json_decode(file_get_contents($filename));
-            foreach ($issues as $_issue2) {
-                if ($_issue2->number == $id) {
-                    $issue = $_issue2;
-                    break;
-                }
-            }
-        } else {
-            echo "run `php issues.php` first so that you have open issues json\n";
+    // labels
+    $labelType = '';
+    $labelImpact = '';
+    $labelEffort = '';
+    foreach ($pr->labels->nodes as $label) {
+        if (preg_match('#^impact/(.+)$#', $label->name, $m)) {
+            $labelImpact = $m[1];
+        }
+        if (preg_match('#^type/(.+)$#', $label->name, $m)) {
+            $labelType = $m[1];
+        }
+        if (preg_match('#^effort/(.+)$#', $label->name, $m)) {
+            $labelEffort = $m[1];
         }
     }
 
+    // Most PR's don't have issues, so adding issue labels results in pretty low value data
+    // Better solution is to add labels directly to PR's
+    // // run php issues.php first to ensure you have json around
+    // $issue = null;
+    // $issueImpact = '';
+    // if (preg_match('#https://github.com/([^/]+)/([^/]+)/issues/([0-9]+)#', $pr->body ?? '', $m)) {
+    //     array_shift($m);
+    //     list($account, $repo, $id) = $m;
+    //     $filename = "json/rest-{$account}-$repo-issues-open.json";
+    //     if (file_exists($filename)) {
+    //         echo "Using local data for $account/$repo issues-open\n";
+    //         $issues = json_decode(file_get_contents($filename));
+    //         foreach ($issues as $_issue2) {
+    //             if ($_issue2->number == $id) {
+    //                 $issue = $_issue2;
+    //                 break;
+    //             }
+    //         }
+    //     } else {
+    //         echo "run `php issues.php` first so that you have open issues json\n";
+    //     }
+    // }
+
     // issue impact
-    foreach ($issue->labels ?? [] as $label) {
-        if (preg_match('#^impact/(.+)$#', $label->name, $m)) {
-            $issueImpact = $m[1];
-        }
-    }
+    // foreach ($issue->labels ?? [] as $label) {
+    //     if (preg_match('#^impact/(.+)$#', $label->name, $m)) {
+    //         $issueImpact = $m[1];
+    //     }
+    // }
 
     $productTeams = ['product_devs', 'pux', 'tsp_ops', 'me', 'dependabot'];
 
@@ -308,9 +326,12 @@ function deriveOpenPRDataRow($pr, $moduleType, $account, $repo) {
         'lastCommitAtNZ' => timestampToNZDate($lastCommitAt),
         'url' => $pr->url,
         'urlFiles' => $pr->url . '/files',
-        'issueTitle' => $issue->title ?? '',
-        'issueUrl' => $issue->html_url ?? '',
-        'issueImpact' => $issueImpact,
+        'labelImpact' => $labelImpact,
+        'labelType' => $labelType,
+        'labelEffort' => $labelEffort,
+        // 'issueTitle' => $issue->title ?? '',
+        // 'issueUrl' => $issue->html_url ?? '',
+        // 'issueImpact' => $issueImpact,
     ];
     return $row;
 }
@@ -323,6 +344,9 @@ function createOpenPRsCsv($data) {
         'type',
         'author',
         'authorType',
+        'labelType',
+        'labelImpact',
+        'labelEffort',
         'createdAtNZ',
         'lastCommitAtNZ',
         'updatedAtNZ',
@@ -342,9 +366,6 @@ function createOpenPRsCsv($data) {
         'justClose',
         'url',
         'urlFiles',
-        'issueTitle',
-        'issueUrl',
-        'issueImpact',
     ];
     createCsv('csv/openprs.csv', $data, $fields);
 }
@@ -360,6 +381,5 @@ if (!$useLocalData) {
     deleteJsonFiles('/graphql\-[a-z\-]+\-openprs\.json/');
 }
 
-echo "\n=== Ensure you run `php issues.php` first to get up to date issue data linked to PRs ===\n\n";
 $data = fetchOpenPRsData();
 createOpenPRsCsv($data);
