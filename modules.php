@@ -18,6 +18,7 @@ $modules = [
             'silverstripe-siteconfig',
             'silverstripe-versioned',
             'silverstripe-versioned-admin',
+            'silverstripe-userhelp-content', // not an installed module, though still relevant
             'cwp-agencyextensions',
             'cwp',
             'cwp-core',
