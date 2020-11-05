@@ -103,7 +103,7 @@ function createTravisCsv() {
             }
             $statusInclPrev = 'fail';
             if (in_array($mjl, $a) && in_array($mnl, $a) && in_array($mnp, $a)) {
-                $statusLatest = ($mjl == 'success' && $mnl == 'success' && $mnp == 'success') ? 'success' : 'pending';
+                $statusInclPrev = ($mjl == 'success' && $mnl == 'success' && $mnp == 'success') ? 'success' : 'pending';
             }
             $rows[] = [
                 'account' => $account,
