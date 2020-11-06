@@ -11,6 +11,7 @@ Create `.credentials`
 ```
 user=my_github_username
 token=abcdef123456abcdef123456abcdef123456abcd
+travis_org_token=xyzdef123456abcdef123456abcdef123456abcd
 ```
 
 Even though we're only accessing publically acessible information, you'll still want a github token so that you won't get rate limited

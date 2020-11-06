@@ -5,7 +5,7 @@ include 'teams.php';
 /**
  * username:token
  */
-function getCredentials($userOnly = false) {
+function getCredentials($userOnly = false, $travis = false) {
     // https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token
     //
     // .credentials
@@ -28,6 +28,9 @@ function getCredentials($userOnly = false) {
     }
     if ($userOnly) {
         return $data['user'];
+    }
+    if ($travis) {
+        return $data['travis_org_token'];
     }
     return $data['user'] . ':' . $data['token'];
 }
@@ -278,32 +281,52 @@ function buildGraphQLQueryJson($query) {
     return "{\"query\":\"$q\"}";
 }
 
-function fetchRest($remotePath, $account, $repo, $extra) {
-    $remoteBase = 'https://api.github.com';
+function fetchRest($remotePath, $account, $repo, $extra, $travis = false) {
+    if ($travis) {
+        $remoteBase = 'https://api.travis-ci.org'; // .com is for private repos
+    } else {
+        $remoteBase = 'https://api.github.com';
+    }
     $remotePath = str_replace($remoteBase, '', $remotePath);
     $remotePath = ltrim($remotePath, '/');
-    if (preg_match('@/[0-9]+$@', $remotePath) || preg_match('@/[0-9]+/files$@', $remotePath)) {
-        // requesting details
+    if ($travis) {
         $url = "$remoteBase/${remotePath}";
     } else {
-        // requesting a list
-        $op = strpos($remotePath, '?') ? '&' : '?';
-        $url = "$remoteBase/${remotePath}${op}per_page=100";
+        // github
+        if (preg_match('@/[0-9]+$@', $remotePath) || preg_match('@/[0-9]+/files$@', $remotePath)) {
+            // requesting details
+            $url = "$remoteBase/${remotePath}";
+        } else {
+            // requesting a list
+            $op = strpos($remotePath, '?') ? '&' : '?';
+            $url = "$remoteBase/${remotePath}${op}per_page=100";
+        }
     }
     $label = str_replace($remoteBase, '', $url);
     echo "Fetching from ${label}\n";
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_USERPWD, getCredentials());
+    if ($travis) {
+        $headers = [
+            'Travis-API-Version: 3',
+            'Accept: application/vnd.travis-ci.2.1+json',
+            'Authorization: token "' . getCredentials(false, true) . '"'
+        ];
+    } else {
+        // github
+        $headers = [
+            'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:28.0) Gecko/20100101 Firefox/28.0'
+        ];
+        curl_setopt($ch, CURLOPT_USERPWD, getCredentials());
+    }
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:28.0) Gecko/20100101 Firefox/28.0'
-    ]);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     waitUntilCanFetch();
     $s = curl_exec($ch);
     curl_close($ch);
     $json = json_decode($s);
+    var_dump($s); //tmp
     if (!is_array($json) && !is_object($json)) {
         echo "Error fetching data\n";
         return null;

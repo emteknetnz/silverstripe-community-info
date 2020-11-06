@@ -21,6 +21,40 @@ include 'functions.php';
 function createTravisCsv() {
     global $modules;
 
+    
+    $account = 'silverstripe';
+
+    // repositories
+    $repo = 'meta';
+    $extra = 'repos';
+    $filename = "json/rest-$account-$repo-$extra.json";
+    $url = "/repos";
+    $data = fetchRest($url, $account, $repo, $extra, true);
+    $repoIds = [];
+    $repoSlugs = [];
+    foreach ($data->repositories as $repo) {
+        if (!in_array($repo->owner_name, ['silverstripe'])) {
+            continue;
+        }
+        $repoIds[$repo->name] = $repo->id;
+        $repoSlugs[$repo->name] = $repo->slug;
+    }
+
+    // query branches
+    // $repo = 'silverstripe-framework'; // works
+    $repo = 'silverstripe-asset-admin'; // does not :/
+    $extra = 'branches';
+    $filename = "json/rest-$account-$repo-$extra.json";
+    $id = $repoIds[$repo];
+    //$slug = "$account/$repo"; // won't always be correct
+    $slug = "$account/$repo";
+    $url = "/repo/$id/branches";
+    //$url = "/repo/$slug/branches";
+    $data = fetchRest($url, $account, $repo, $extra, true);
+    var_dump($data);
+
+    die;
+
     $rows = [];
     $moduleType = 'regular'; // not interested in tooling
     foreach ($modules[$moduleType] as $account => $repos) {
