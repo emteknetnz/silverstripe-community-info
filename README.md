@@ -14,7 +14,7 @@ token=abcdef123456abcdef123456abcdef123456abcd
 travis_org_token=xyzdef123456abcdef123456abcdef123456abcd
 ```
 
-Even though we're only accessing publically acessible information, you'll still want a github token so that you won't get rate limited
+token is a github token. Even though we're only accessing publically acessible information, you'll still want a github token so that you won't get rate limited
 
 Setup a token on you github account https://github.com/settings/tokens/new
 ```
@@ -22,18 +22,22 @@ Setup a token on you github account https://github.com/settings/tokens/new
 [x] Access public repositories 
 ```
 
+travis_org_token can be found at https://travis-ci.org/account/preferences.  It's important you use the token from from the .org site not the .com site which behaves differently and will include your private repos.
+
 ## Usage
 
 ### Fetch latest data from github and output a csv to the csv directory
 ```
 php openprs.php
 php issues.php
+php travis.php
 ```
 
 ### Re-use local data if available (useful for development)
 ```
 php openprs.php -l (or --local)
 php issues.php -l (or --local)
+php travis.php -l (or --local)
 ```
 
 ### Making use of the csv output in a google spreadhseet

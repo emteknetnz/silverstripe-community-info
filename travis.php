@@ -20,24 +20,33 @@ include 'functions.php';
 
 function createTravisCsv() {
     global $modules;
-
     
     $account = 'silverstripe';
 
-    // repositories
+    // repositories - max limit is 100
     $repo = 'meta';
-    $extra = 'repos';
-    $filename = "json/rest-$account-$repo-$extra.json";
-    $url = "/repos";
-    $data = fetchRest($url, $account, $repo, $extra, true);
+    // only need up to 400, though allowing for future growth going to 600
+    $offets = [
+        '0', '100', '200', '300', '400', 
+        //'500', '600'
+    ];
     $repoIds = [];
-    $repoSlugs = [];
-    foreach ($data->repositories as $repo) {
-        if (!in_array($repo->owner_name, ['silverstripe'])) {
-            continue;
+    foreach ($offets as $offset) {
+        $extra = "travis-repos-$offset";
+        $filename = "json/rest-$account-$repo-$extra.json";
+        if (file_exists($filename)) {
+            echo "Using local data for $filename\n";
+            $data = json_decode(file_get_contents($filename));
+        } else {
+            $url = "/repos?private=false&limit=100&offset=$offset";
+            $data = fetchRest($url, $account, $repo, $extra, true);
         }
-        $repoIds[$repo->name] = $repo->id;
-        $repoSlugs[$repo->name] = $repo->slug;
+        foreach ($data->repositories as $obj) {
+            if (!in_array($obj->owner_name, ['silverstripe'])) {
+                continue;
+            }
+            $repoIds[$obj->name] = $obj->id;
+        }
     }
 
     // query branches
@@ -46,10 +55,7 @@ function createTravisCsv() {
     $extra = 'branches';
     $filename = "json/rest-$account-$repo-$extra.json";
     $id = $repoIds[$repo];
-    //$slug = "$account/$repo"; // won't always be correct
-    $slug = "$account/$repo";
     $url = "/repo/$id/branches";
-    //$url = "/repo/$slug/branches";
     $data = fetchRest($url, $account, $repo, $extra, true);
     var_dump($data);
 
@@ -163,7 +169,7 @@ createDataDirs(['json', 'csv']);
 $useLocalData = in_array(($argv[1] ?? ''), ['-l', '--local']);
 
 if (!$useLocalData) {
-    deleteJsonFiles('/^rest\-[a-z\-]+\-travis.+?\.json$/');
+    deleteJsonFiles('/^rest\-.*?\-travis.+?\.json$/');
 }
 
 createTravisCsv();

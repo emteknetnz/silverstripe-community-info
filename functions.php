@@ -30,7 +30,8 @@ function getCredentials($userOnly = false, $travis = false) {
         return $data['user'];
     }
     if ($travis) {
-        return $data['travis_org_token'];
+        //return $data['travis_org_token'];
+        return $data["travis_org_token"];
     }
     return $data['user'] . ':' . $data['token'];
 }
@@ -283,23 +284,22 @@ function buildGraphQLQueryJson($query) {
 
 function fetchRest($remotePath, $account, $repo, $extra, $travis = false) {
     if ($travis) {
-        $remoteBase = 'https://api.travis-ci.org'; // .com is for private repos
-    } else {
-        $remoteBase = 'https://api.github.com';
+        $remoteBase = "https://api.travis-ci.org";
     }
     $remotePath = str_replace($remoteBase, '', $remotePath);
     $remotePath = ltrim($remotePath, '/');
     if ($travis) {
-        $url = "$remoteBase/${remotePath}";
+        // travis
+        $url = "${remoteBase}/${remotePath}";
     } else {
         // github
-        if (preg_match('@/[0-9]+$@', $remotePath) || preg_match('@/[0-9]+/files$@', $remotePath)) {
+        if (preg_match('#/[0-9]+$#', $remotePath) || preg_match('@/[0-9]+/files$@', $remotePath)) {
             // requesting details
-            $url = "$remoteBase/${remotePath}";
+            $url = "${remoteBase}/${remotePath}";
         } else {
             // requesting a list
             $op = strpos($remotePath, '?') ? '&' : '?';
-            $url = "$remoteBase/${remotePath}${op}per_page=100";
+            $url = "${remoteBase}/${remotePath}${op}per_page=100";
         }
     }
     $label = str_replace($remoteBase, '', $url);
@@ -326,7 +326,6 @@ function fetchRest($remotePath, $account, $repo, $extra, $travis = false) {
     $s = curl_exec($ch);
     curl_close($ch);
     $json = json_decode($s);
-    var_dump($s); //tmp
     if (!is_array($json) && !is_object($json)) {
         echo "Error fetching data\n";
         return null;
