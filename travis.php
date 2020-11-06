@@ -38,7 +38,7 @@ function createTravisCsv() {
             break;
         }
         foreach ($data->repositories as $obj) {
-            // TODO: can't find silverstripe-elemental, even if I add dnadesign to here (just not in data?)
+            // TODO: can't find silverstripe-elemental as that repo is still in travis-ci.org
             if (!in_array($obj->owner_name, ['silverstripe'])) {
                 continue;
             }
