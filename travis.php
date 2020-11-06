@@ -21,17 +21,14 @@ include 'functions.php';
 function createTravisCsv() {
     global $modules;
     
+    $pagination = '@pagination';
+
     $account = 'silverstripe';
 
-    // repositories - max limit is 100
+    // get repository id's
     $repo = 'meta';
-    // only need up to 400, though allowing for future growth going to 600
-    $offets = [
-        '0', '100', '200', '300', '400', 
-        //'500', '600'
-    ];
     $repoIds = [];
-    foreach ($offets as $offset) {
+    for ($offset = 0; $offset < 1000; $offset += 100) {
         $extra = "travis-repos-$offset";
         $filename = "json/rest-$account-$repo-$extra.json";
         if (file_exists($filename)) {
@@ -41,25 +38,95 @@ function createTravisCsv() {
             $url = "/repos?private=false&limit=100&offset=$offset";
             $data = fetchRest($url, $account, $repo, $extra, true);
         }
+        if (!$data) {
+            break;
+        }
         foreach ($data->repositories as $obj) {
             if (!in_array($obj->owner_name, ['silverstripe'])) {
                 continue;
             }
             $repoIds[$obj->name] = $obj->id;
         }
+        if (is_null($data->$pagination->next)) {
+            break;
+        }
     }
 
-    // query branches
-    // $repo = 'silverstripe-framework'; // works
-    $repo = 'silverstripe-asset-admin'; // does not :/
-    $extra = 'branches';
-    $filename = "json/rest-$account-$repo-$extra.json";
-    $id = $repoIds[$repo];
-    $url = "/repo/$id/branches";
-    $data = fetchRest($url, $account, $repo, $extra, true);
-    var_dump($data);
+    // query branches - get branches numbers (but not latest commits or status)
+    $repo = 'silverstripe-config';
+    $repoId = $repoIds[$repo];
+    $branchNames = [];
+    for ($offset = 0; $offset < 1000; $offset += 100) {
+        $extra = "travis-branches-$offset";
+        $filename = "json/rest-$account-$repo-$extra.json";
+        if (file_exists($filename)) {
+            echo "Using local data for $filename\n";
+            $data = json_decode(file_get_contents($filename));
+        } else {
+            $url = "/repo/$repoId/branches?exists_on_github=true&limit=100&offset=$offset";
+            $data = fetchRest($url, $account, $repo, $extra, true);
+        }
+        if (!$data) {
+            break;
+        }
+        foreach ($data->branches as $obj) {
+            $branchNames[] = $obj->name;
+        }
+        if (is_null($data->$pagination->next)) {
+            break;
+        }
+    }
+    sort($branchNames);
+    $branchData = [
+        'major-latest' => ['branch' => 0, 'number' => '', 'state' => '', 'commit' => ''],
+        'minor-latest' => ['branch' => 0, 'number' => '', 'state' => '', 'commit' => ''],
+        'minor-previous'=> ['branch' => 0, 'number' => '', 'state' => '', 'commit' => ''],
+    ];
+    // major
+    foreach ($branchNames as $branch) {
+        if (preg_match('#^[1-9]$#', $branch) && $branch > $branchData['major-latest']['branch']) {
+            $branchData['major-latest']['branch'] = $branch;
+        }
+    }
+    // minors
+    foreach ($branchNames as $branch) {
+        if (preg_match('#^([1-9])\.([0-9]{1,2})$#', $branch, $m)) {
+            if ($m[1] == $branchData['major-latest']['branch']) {
+                if ($branch > $branchData['minor-latest']['branch']) {
+                    $branchData['minor-previous']['branch'] = $branchData['minor-latest']['branch'];
+                    $branchData['minor-latest']['branch'] = $branch;
+                }
+            }
+        }
+    }
+    // get builds
+    foreach ($branchData as $type => $arr) {
+        $branch = $arr['branch'];
+        if ($branch == 0) {
+            continue;
+        }
+        $extra = "travis-builds-$branch";
+        $filename = "json/rest-$account-$repo-$extra.json";
+        if (file_exists($filename)) {
+            echo "Using local data for $filename\n";
+            $data = json_decode(file_get_contents($filename));
+        } else {
+            $url = "/repo/$repoId/builds?branch.name=$branch&event_type=push,api&sort_by=number:desc&limit=1";
+            $data = fetchRest($url, $account, $repo, $extra, true);
+        }
+        if (!$data || empty($data->builds)) {
+            continue;
+        }
+        $branchData[$type]['number'] = $data->builds[0]->number;
+        $branchData[$type]['state'] = $data->builds[0]->state;
+        $branchData[$type]['commit'] = $data->builds[0]->commit->sha;
+    }
+
+    print_r($branchData);
 
     die;
+
+//=========================
 
     $rows = [];
     $moduleType = 'regular'; // not interested in tooling

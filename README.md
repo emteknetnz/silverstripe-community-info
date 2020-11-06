@@ -11,7 +11,7 @@ Create `.credentials`
 ```
 user=my_github_username
 token=abcdef123456abcdef123456abcdef123456abcd
-travis_org_token=xyzdef123456abcdef123456abcdef123456abcd
+travis_com_token=xyzdef123456abcdef123456abcdef123456abcd
 ```
 
 token is a github token. Even though we're only accessing publically acessible information, you'll still want a github token so that you won't get rate limited
@@ -22,7 +22,7 @@ Setup a token on you github account https://github.com/settings/tokens/new
 [x] Access public repositories 
 ```
 
-travis_org_token can be found at https://travis-ci.org/account/preferences.  It's important you use the token from from the .org site not the .com site which behaves differently and will include your private repos.
+travis_com_token can be found at https://travis-ci.org/account/preferences.  It's important you use the token from from the .com site not the .org site.  The .com api can include data from your personal private github repos so only use this on a local trusted computer.  Private repos are filtered out in queries by default.
 
 ## Usage
 

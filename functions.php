@@ -30,8 +30,7 @@ function getCredentials($userOnly = false, $travis = false) {
         return $data['user'];
     }
     if ($travis) {
-        //return $data['travis_org_token'];
-        return $data["travis_org_token"];
+        return $data["travis_com_token"];
     }
     return $data['user'] . ':' . $data['token'];
 }
@@ -284,7 +283,7 @@ function buildGraphQLQueryJson($query) {
 
 function fetchRest($remotePath, $account, $repo, $extra, $travis = false) {
     if ($travis) {
-        $remoteBase = "https://api.travis-ci.org";
+        $remoteBase = "https://api.travis-ci.com";
     }
     $remotePath = str_replace($remoteBase, '', $remotePath);
     $remotePath = ltrim($remotePath, '/');
