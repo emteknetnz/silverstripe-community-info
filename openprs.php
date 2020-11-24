@@ -251,7 +251,9 @@ function deriveOpenPRDataRow($pr, $moduleType, $account, $repo) {
     // labels
     $labelType = '';
     $labelImpact = '';
+    $labelAffects = '';
     $labelEffort = '';
+    $labelChange = '';
     foreach ($pr->labels->nodes as $label) {
         if (preg_match('#^impact/(.+)$#', $label->name, $m)) {
             $labelImpact = $m[1];
@@ -261,6 +263,12 @@ function deriveOpenPRDataRow($pr, $moduleType, $account, $repo) {
         }
         if (preg_match('#^effort/(.+)$#', $label->name, $m)) {
             $labelEffort = $m[1];
+        }
+        if (preg_match('#^affects/(.+)$#', $label->name, $m)) {
+            $labelAffects = $m[1];
+        }
+        if (preg_match('#^change/(.+)$#', $label->name, $m)) {
+            $labelChange = $m[1];
         }
     }
 
@@ -329,6 +337,8 @@ function deriveOpenPRDataRow($pr, $moduleType, $account, $repo) {
         'labelImpact' => $labelImpact,
         'labelType' => $labelType,
         'labelEffort' => $labelEffort,
+        'labelAffects' => $labelAffects,
+        'labelChange' => $labelChange,
         // 'issueTitle' => $issue->title ?? '',
         // 'issueUrl' => $issue->html_url ?? '',
         // 'issueImpact' => $issueImpact,
@@ -347,6 +357,10 @@ function createOpenPRsCsv($data) {
         'labelType',
         'labelImpact',
         'labelEffort',
+        'labelAffects',
+        'labelChange',
+        'url',
+        'urlFiles',
         'createdAtNZ',
         'lastCommitAtNZ',
         'updatedAtNZ',
@@ -364,8 +378,6 @@ function createOpenPRsCsv($data) {
         'stalePR',
         'askToClose',
         'justClose',
-        'url',
-        'urlFiles',
     ];
     createCsv('csv/openprs.csv', $data, $fields);
 }
