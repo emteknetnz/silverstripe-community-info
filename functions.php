@@ -282,6 +282,7 @@ function buildGraphQLQueryJson($query) {
 }
 
 function fetchRest($remotePath, $account, $repo, $extra, $travis = false) {
+    $remoteBase = "https://api.github.com";
     if ($travis) {
         $remoteBase = "https://api.travis-ci.com";
     }
