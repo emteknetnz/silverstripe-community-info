@@ -30,7 +30,7 @@ function createStandardsCsv() {
                     $name = $branch->name;
                     // allow major and minor -- a few repos may not have a single minor, major only
                     if (preg_match('#^[1-9]$#', $name) || preg_match('#^[1-9]\.[0-9]$#', $name)) {
-                        if ($name > $ref) {
+                        if ($name > $ref || $name == $ref && preg_match('#\.#', $ref)) {
                             $ref = $name;
                         }
                     }
