@@ -40,7 +40,7 @@ function createStandardsCsv() {
                     $ref = 'master';
                 }
                 // get contents of .travis file
-                https://api.github.com/repos/silverstripe/silverstripe-asset-admin/contents/.travis.yml?ref=1.7
+                // https://api.github.com/repos/silverstripe/silverstripe-asset-admin/contents/.travis.yml?ref=1.7
                 $filename = "json/rest-$account-$repo-standards-travis-$ref.json";
                 if (file_exists($filename)) {
                     echo "Using local data for $filename\n";
@@ -50,16 +50,39 @@ function createStandardsCsv() {
                     $data = fetchRest($url, $account, $repo, "standards-travis-$ref");
                 }
                 $travisSharedConfig = 'unknown';
+                $travisNpm = 'unknown';
+                $travisBehat = 'unknown';
                 if ($data && isset($data->content)) {
                     $content = base64_decode($data->content);
                     $b = strpos($content, 'silverstripe/silverstripe-travis-shared') !== false;
                     $travisSharedConfig = $b ? 'yes' : 'no';
+                    $travisNpm = strpos($content, 'NPM_TEST') !== false ? 'yes' : 'no';
+                    $travisBehat = strpos($content, 'BEHAT_TEST') !== false ? 'yes' : 'no';
+                }
+                // get contents of composer.json file
+                // https://api.github.com/repos/silverstripe/silverstripe-asset-admin/contents/composer.json?ref=1.7
+                $filename = "json/rest-$account-$repo-standards-composer-json-$ref.json";
+                if (file_exists($filename)) {
+                    echo "Using local data for $filename\n";
+                    $data = json_decode(file_get_contents($filename));
+                } else {
+                    $url = "/repos/$account/$repo/contents/composer.json?ref=$ref";
+                    $data = fetchRest($url, $account, $repo, "standards-composer-json-$ref");
+                }
+                $sminneePhpunit = 'unknown';
+                if ($data && isset($data->content)) {
+                    $content = base64_decode($data->content);
+                    $b = strpos($content, 'sminnee/phpunit') !== false || strpos($content, 'silverstripe/recipe-testing') !== false;
+                    $sminneePhpunit = $b ? 'yes' : 'no';
                 }
                 $row = [
                     'account' => $account,
                     'repo' => $repo,
                     'latestBranch' => $ref,
-                    'travisSharedConfig' => $travisSharedConfig
+                    'travisSharedConfig' => $travisSharedConfig,
+                    'travisNpm' => $travisNpm,
+                    'travisBehat' => $travisBehat,
+                    'sminneePhpunit' => $sminneePhpunit,
                 ];
                 $rows[] = $row;
             }
