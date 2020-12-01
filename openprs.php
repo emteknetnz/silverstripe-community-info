@@ -120,7 +120,7 @@ function buildOpenPRsQuery($account, $repo) {
           }
         }
       }
-    EOT;
+EOT;
 }
 
 function deriveOpenPRDataRow($pr, $moduleType, $account, $repo) {
