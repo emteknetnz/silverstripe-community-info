@@ -281,6 +281,17 @@ function buildGraphQLQueryJson($query) {
     return "{\"query\":\"$q\"}";
 }
 
+function fetchRestOrUseLocal($remotePath, $account, $repo, $iden) {
+    $filename = "json/rest-$account-$repo-$iden.json";
+    if (file_exists($filename)) {
+        echo "Using local data for $filename\n";
+        $data = json_decode(file_get_contents($filename));
+    } else {
+        $data = fetchRest($remotePath, $account, $repo, $iden);
+    }
+    return $data;
+}
+
 function fetchRest($remotePath, $account, $repo, $extra, $travis = false) {
     $remoteBase = "https://api.github.com";
     if ($travis) {

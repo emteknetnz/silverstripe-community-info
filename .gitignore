@@ -1,3 +1,4 @@
 .credentials
 *.csv
 *.json
+.idea
