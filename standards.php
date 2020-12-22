@@ -35,71 +35,82 @@ function createStandardsCsv() {
             }
             $ref = $name;
         }
-        // if no match for next-minor, then default to master branch
-        // if no match for next-patch, then default to 999.999 which will cause a blank row
         if (!$ref) {
-            $ref = $branchType == 'next-minor' ? 'master' : '999.999';
+            $ref = $branchType == 'next-minor' ? 'master' : 'missing';
+        }
+        if ($ref == 'missing') {
+            $latestBranch = 'missing';
+        } else {
+            // important to suffix .x-dev otherwise excel will remove '.0' from next-patch branches
+            $latestBranch = $ref == 'master' ? 'dev-master' : $ref . '.x-dev';
         }
         $repoKeyValues = [
             'account' => $account,
             'repo' => $repo,
             'branchType' => $branchType,
-            'latestBranch' => $ref
+            'latestBranch' => $latestBranch
         ];
         $arr = array_merge($repoKeyValues);
-        // get contents of .travis file
-        // https://api.github.com/repos/silverstripe/silverstripe-asset-admin/contents/.travis.yml?ref=1.7
-        $data = fetchRestOrUseLocal("/repos/$account/$repo/contents/.travis.yml?ref=$ref", $account, $repo, "standards-travis-$ref");
-        $travisKeyBlanks = [
-            'travisSharedConfig' => '',
-        ];
-        $travisKeyRxs = [
-            'travisProvision' => '#config/provision/([^\.]+)\.yml#',
-            'travisRootVersion' => '#COMPOSER_ROOT_VERSION="([0-9\.]+?\.x-dev)"#',
-            'travisRequireRecipe' => '#REQUIRE_RECIPE="([0-9\.]+?\.x-dev)"#',
-        ];
-        $travisKeyStrs = [
-            'travisMatrix' => 'jobs:',
-            'travisPHPUnit' => 'PHPUNIT_TEST',
-            'travisPHPCS' => 'PHPCS_TEST',
-            'travisPHPCoverage' => 'PHPUNIT_COVERAGE_TEST',
-            'travisPreferLowest' => '--prefer-lowest',
-            'travisPHP8' => 'php: nightly',
-            'travisPHP8AllowFailure' => '  allow_failures:\n    - php: nightly',
-            'travisNpm' => 'NPM_TEST',
-            'travisBehat' => 'BEHAT_TEST',
-            'travisCow' => 'COW_TEST',
-        ];
-        if ($data && isset($data->content)) {
-            $content = base64_decode($data->content);
-            $arr['travisSharedConfig'] = strpos($content, 'silverstripe/silverstripe-travis-shared') !== false ? 'yes' : 'no';
-            if ($arr['travisSharedConfig'] == 'yes') {
-                foreach ($travisKeyStrs as $key => $str) {
-                    $arr[$key] = strpos($content, $str) !== false ? 'yes' : 'no';
-                }
-                foreach ($travisKeyRxs as $key => $rx) {
-                    preg_match($rx, $content, $m);
-                    $arr[$key] = $m[1] ?? '';
+        if ($ref != 'missing') {
+            // get contents of .travis file
+            // https://api.github.com/repos/silverstripe/silverstripe-asset-admin/contents/.travis.yml?ref=1.7
+            $data = fetchRestOrUseLocal("/repos/$account/$repo/contents/.travis.yml?ref=$ref", $account, $repo, "standards-travis-$ref");
+            $travisKeyValues = [
+                'travisFileExists' => '',
+                'travisSharedConfig' => '',
+            ];
+            $travisKeyRxs = [
+                'travisProvision' => '#config/provision/([^\.]+)\.yml#',
+                'travisRootVersion' => '#COMPOSER_ROOT_VERSION=["\']*([0-9\.]+?\.x-dev)["\']*#',
+                'travisRequireRecipe' => '#REQUIRE_RECIPE=["\']*([0-9\.]+?\.x-dev)["\']*#',
+                'travisRequireExtra' => '#REQUIRE_EXTRA=["\']*([^"\'$]+)["\']*#',
+            ];
+            $travisKeyStrs = [
+                'travisTidy' => '- tidy',
+                'travisCustomMatrix' => 'jobs:',
+                'travisPhpUnit' => 'PHPUNIT_TEST',
+                'travisPhpCS' => 'PHPCS_TEST',
+                'travisPhpCoverage' => 'PHPUNIT_COVERAGE_TEST',
+                'travisPreferLowest' => '--prefer-lowest',
+                'travisPhp8' => 'php: nightly',
+                'travisPhp8AllowFailure' => '  allow_failures:\n    - php: nightly',
+                'travisNpm' => 'NPM_TEST',
+                'travisBehat' => 'BEHAT_TEST',
+                'travisCow' => 'COW_TEST',
+            ];
+            $arr['travisFileExists'] = 'no';
+            if ($data && isset($data->content)) {
+                $content = base64_decode($data->content);
+                $arr['travisFileExists'] = 'yes';
+                $arr['travisSharedConfig'] = strpos($content, 'silverstripe/silverstripe-travis-shared') !== false ? 'yes' : 'no';
+                if ($arr['travisSharedConfig'] == 'yes') {
+                    foreach ($travisKeyStrs as $key => $str) {
+                        $arr[$key] = strpos($content, $str) !== false ? 'yes' : 'no';
+                    }
+                    foreach ($travisKeyRxs as $key => $rx) {
+                        preg_match($rx, $content, $m);
+                        $arr[$key] = $m[1] ?? '';
+                    }
                 }
             }
-        }
-        // get contents of composer.json file
-        // https://api.github.com/repos/silverstripe/silverstripe-asset-admin/contents/composer.json?ref=1.7
-        $composerKeyBlanks = [
-            'sminneePhpunit' => ''
-        ];
-        $data = fetchRestOrUseLocal("/repos/$account/$repo/contents/composer.json?ref=$ref", $account, $repo, "standards-composer-json-$ref");
-        if ($data && isset($data->content)) {
-            $content = base64_decode($data->content);
-            $b = strpos($content, 'sminnee/phpunit') !== false || strpos($content, 'silverstripe/recipe-testing') !== false;
-            $arr['sminneePhpunit'] = $b ? 'yes' : 'no';
+            // get contents of composer.json file
+            // https://api.github.com/repos/silverstripe/silverstripe-asset-admin/contents/composer.json?ref=1.7
+            $composerKeyValues = [
+                'composerSminneePhpunit' => ''
+            ];
+            $data = fetchRestOrUseLocal("/repos/$account/$repo/contents/composer.json?ref=$ref", $account, $repo, "standards-composer-json-$ref");
+            if ($data && isset($data->content)) {
+                $content = base64_decode($data->content);
+                $b = strpos($content, 'sminnee/phpunit') !== false || strpos($content, 'silverstripe/recipe-testing') !== false;
+                $arr['composerSminneePhpunit'] = $b ? 'yes' : 'no';
+            }
         }
         $keys = array_merge(
             array_keys($repoKeyValues),
-            array_keys($travisKeyBlanks),
+            array_keys($travisKeyValues),
             array_keys($travisKeyRxs),
             array_keys($travisKeyStrs),
-            array_keys($composerKeyBlanks)
+            array_keys($composerKeyValues)
         );
         $row = [];
         foreach ($keys as $key) {
