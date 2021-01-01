@@ -50,8 +50,7 @@ function createStandardsCsv() {
             'account' => $account,
             'repo' => $repo,
             'branchType' => $branchType,
-            'latestBranch' => $latestBranch,
-            'cloneCommand' => "git clone git@github.com:$account/$repo.git",
+            'latestBranch' => $latestBranch
         ];
         $arr = array_merge($repoKeyValues);
         if ($ref != 'missing') {
@@ -109,19 +108,22 @@ function createStandardsCsv() {
             }
             $compareKeyValues = [
                 'compareMergeUp' => '',
-                'compareUrl' => '', 
+                'compareUrl' => '',
+                'compareClone' => '',
+                'compareMergeupCmd' => '',
             ];
             // check merge-up status (next-minor branch only)
-            // don't use local data for this one
             if ($branchType == 'next-minor') {
                 $arr['compareMergeUp'] = 'not-tested';
             } elseif ($branchType == 'next-patch' && preg_match($nextPatchRx, $ref, $m)) {
                 $nextPatchBranch = $ref;
                 $nextMinorBranch = $m[1];
-                $data = fetchRest("/repos/$account/$repo/compare/$nextMinorBranch...$nextPatchBranch", $account, $repo, "standards-compare-$nextMinorBranch-$nextPatchBranch");
+                $data = fetchRestOrUseLocal("/repos/$account/$repo/compare/$nextMinorBranch...$nextPatchBranch", $account, $repo, "standards-compare-$nextMinorBranch-$nextPatchBranch");
                 $needsMergeUp = ($data->ahead_by ?? 0) > 0;
                 $arr['compareMergeUp'] = $needsMergeUp ? 'needs-merge-up' : 'up-to-date';
                 $arr['compareUrl'] = $needsMergeUp ? "https://github.com/$account/$repo/compare/$nextMinorBranch...$nextPatchBranch" : '';
+                $arr['compareClone'] = "git clone git@github.com:$account/$repo.git";
+                $arr['compareMergeupCmd'] = "gc $nextPatchBranch && gc $nextMinorBranch && git mergeup $nextPatchBranch";
             }
         }
         $keys = array_merge(
