@@ -27,9 +27,11 @@ function createStandardsCsv() {
         }
         // find the "highest" branch which should be the latest minor
         $ref = 0;
+        $nextMinorRx = '#^([1-9])$#';
+        $nextPatchRx = '#^([1-9])\.([0-9])$#';
         foreach ($data as $branch) {
             $name = $branch->name;
-            $rx = $branchType == 'next-minor' ? '#^[1-9]$#' : '#^[1-9]\.[0-9]$#';
+            $rx = $branchType == 'next-minor' ? $nextMinorRx : $nextPatchRx;
             if (!preg_match($rx, $name) || $name <= $ref) {
                 continue;
             }
@@ -48,7 +50,8 @@ function createStandardsCsv() {
             'account' => $account,
             'repo' => $repo,
             'branchType' => $branchType,
-            'latestBranch' => $latestBranch
+            'latestBranch' => $latestBranch,
+            'cloneCommand' => "git clone git@github.com:$account/$repo.git",
         ];
         $arr = array_merge($repoKeyValues);
         if ($ref != 'missing') {
@@ -104,13 +107,30 @@ function createStandardsCsv() {
                 $b = strpos($content, 'sminnee/phpunit') !== false || strpos($content, 'silverstripe/recipe-testing') !== false;
                 $arr['composerSminneePhpunit'] = $b ? 'yes' : 'no';
             }
+            $compareKeyValues = [
+                'compareMergeUp' => '',
+                'compareUrl' => '', 
+            ];
+            // check merge-up status (next-minor branch only)
+            // don't use local data for this one
+            if ($branchType == 'next-minor') {
+                $arr['compareMergeUp'] = 'not-tested';
+            } elseif ($branchType == 'next-patch' && preg_match($nextPatchRx, $ref, $m)) {
+                $nextPatchBranch = $ref;
+                $nextMinorBranch = $m[1];
+                $data = fetchRest("/repos/$account/$repo/compare/$nextMinorBranch...$nextPatchBranch", $account, $repo, "standards-compare-$nextMinorBranch-$nextPatchBranch");
+                $needsMergeUp = ($data->ahead_by ?? 0) > 0;
+                $arr['compareMergeUp'] = $needsMergeUp ? 'needs-merge-up' : 'up-to-date';
+                $arr['compareUrl'] = $needsMergeUp ? "https://github.com/$account/$repo/compare/$nextMinorBranch...$nextPatchBranch" : '';
+            }
         }
         $keys = array_merge(
             array_keys($repoKeyValues),
             array_keys($travisKeyValues),
             array_keys($travisKeyRxs),
             array_keys($travisKeyStrs),
-            array_keys($composerKeyValues)
+            array_keys($composerKeyValues),
+            array_keys($compareKeyValues)
         );
         $row = [];
         foreach ($keys as $key) {
@@ -132,4 +152,3 @@ if (!$useLocalData) {
 }
 
 createStandardsCsv();
-
