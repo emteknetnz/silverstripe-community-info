@@ -123,7 +123,7 @@ function createStandardsCsv() {
                 $arr['compareMergeUp'] = $needsMergeUp ? 'needs-merge-up' : 'up-to-date';
                 $arr['compareUrl'] = $needsMergeUp ? "https://github.com/$account/$repo/compare/$nextMinorBranch...$nextPatchBranch" : '';
                 $arr['compareClone'] = "git clone git@github.com:$account/$repo.git";
-                $arr['compareMergeupCmd'] = "gc $nextPatchBranch && gc $nextMinorBranch && git mergeup $nextPatchBranch";
+                $arr['compareMergeupCmd'] = "cd $repo && gc $nextPatchBranch && gc $nextMinorBranch && git mergeup $nextPatchBranch";
             }
         }
         $keys = array_merge(
