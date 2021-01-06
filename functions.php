@@ -177,7 +177,7 @@ function isImageFile($path) {
 
 function isConfigFile($path) {
     // possiblly should treat .travis.yml and .scrutinizer as 'tooling'
-    return in_array($path, ['.travis.yml', '.scrutinizer.yml', 'behat.yml', 'composer.json', 'composer.lock', 'package.json', 'yarn.lock']) ||
+    return in_array($path, ['.travis.yml', '.scrutinizer.yml', 'behat.yml', 'composer.json', 'composer.lock', 'package.json', 'yarn.lock', 'phpunit.xml.dist', 'phpcs.xml.dist', 'webpack.config.js', 'webpack-vars.js']) ||
         preg_match('@lang/[A-Za-z]{2}.yml$@', $path);
 }
 
