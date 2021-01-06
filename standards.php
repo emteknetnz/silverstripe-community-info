@@ -109,8 +109,6 @@ function createStandardsCsv() {
             $compareKeyValues = [
                 'compareMergeUp' => '',
                 'compareUrl' => '',
-                'compareClone' => '',
-                'compareMergeupCmd' => '',
             ];
             // check merge-up status (next-minor branch only)
             if ($branchType == 'next-minor') {
@@ -122,8 +120,6 @@ function createStandardsCsv() {
                 $needsMergeUp = ($data->ahead_by ?? 0) > 0;
                 $arr['compareMergeUp'] = $needsMergeUp ? 'needs-merge-up' : 'up-to-date';
                 $arr['compareUrl'] = $needsMergeUp ? "https://github.com/$account/$repo/compare/$nextMinorBranch...$nextPatchBranch" : '';
-                $arr['compareClone'] = "git clone git@github.com:$account/$repo.git";
-                $arr['compareMergeupCmd'] = "cd $repo && gc $nextPatchBranch && gc $nextMinorBranch && git mergeup $nextPatchBranch";
             }
         }
         $keys = array_merge(
