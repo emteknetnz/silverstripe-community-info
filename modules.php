@@ -19,6 +19,7 @@ $modulesWithoutNextMinorBranch = [
     'silverstripe' => [
         'silverstripe-selectupload',
         'silverstripe-lumberjack',
+        'silverstripe-gridfieldqueuedexport',
     ],
     'lekoala' => [
         'silverstripe-debugbar',
