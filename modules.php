@@ -5,7 +5,7 @@ $modulesWithCustomTravis = [
     'silverstripe' => [
         'cwp-starter-theme',
         'silverstripe-upgrader',
-        'sspak'
+        'sspak',
     ]
 ];
 
@@ -17,10 +17,11 @@ $modulesWithoutNextMinorBranch = [
         'silverstripe-composer-security-checker',
     ],
     'silverstripe' => [
-        'silverstripe-lumberjack'
+        'silverstripe-selectupload',
+        'silverstripe-lumberjack',
     ],
     'lekoala' => [
-        'silverstripe-debugbar'
+        'silverstripe-debugbar',
     ],
 ];
 
@@ -76,7 +77,6 @@ $modules = [
             'silverstripe-contentreview',
             'silverstripe-crontask',
             'silverstripe-documentconverter',
-            'silverstripe-elemental-blocks',
             'silverstripe-elemental-bannerblock',
             'silverstripe-elemental-fileblock',
             'silverstripe-environmentcheck',
@@ -100,7 +100,6 @@ $modules = [
             'recipe-services',
             'silverstripe-registry',
             'silverstripe-restfulserver',
-            'silverstripe-secureassets',
             'silverstripe-securityreport',
             'silverstripe-segment-field',
             'silverstripe-selectupload',
@@ -128,7 +127,6 @@ $modules = [
             'silverstripe-advancedworkflow',
             'silverstripe-multivaluefield',
             'silverstripe-queuedjobs',
-            'silverstripe-versionedfiles',
         ],
     ],
     // TODO: I haven't migrated over all ss3 modules into here yet, only some of them
@@ -147,6 +145,7 @@ $modules = [
     ],
     'legacy' => [
         'silverstripe-controllerpolicy',
+        'silverstripe-elemental-blocks',
         'silverstripe-sqlite3',
     ],
     'tooling' => [
