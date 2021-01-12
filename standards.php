@@ -6,12 +6,15 @@ include 'modules.php';
 include 'functions.php';
 
 function createStandardsCsv() {
-    global $modules;
+    global $modules, $modulesWithCustomTravis, $modulesWithoutNextMinorBranch;
     $varsList = [];
     foreach (['regular', 'tooling'] as $moduleType) {
         foreach ($modules[$moduleType] as $account => $repos) {
             foreach ($repos as $repo) {
                 foreach (['next-minor', 'next-patch'] as $branchType) {
+                    if ($branchType == 'next-minor' && in_array($repo, $modulesWithoutNextMinorBranch[$account])) {
+                        continue;
+                    }
                     $varsList[] = [$account, $repo, $branchType];
                 }
             }
@@ -85,6 +88,9 @@ function createStandardsCsv() {
                 $content = base64_decode($data->content);
                 $arr['travisFileExists'] = 'yes';
                 $arr['travisSharedConfig'] = strpos($content, 'silverstripe/silverstripe-travis-shared') !== false ? 'yes' : 'no';
+                if (in_array($repo, $modulesWithCustomTravis[$account])) {
+                    $arr['travisSharedConfig'] = 'custom';
+                }
                 if ($arr['travisSharedConfig'] == 'yes') {
                     foreach ($travisKeyStrs as $key => $str) {
                         $arr[$key] = strpos($content, $str) !== false ? 'yes' : 'no';

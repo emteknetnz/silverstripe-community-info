@@ -1,5 +1,29 @@
 <?php
 
+// modules with custom travis files that are excluded from travis shared config check
+$modulesWithCustomTravis = [
+    'silverstripe' => [
+        'cwp-starter-theme',
+        'silverstripe-upgrader',
+        'sspak'
+    ]
+];
+
+// modules that lack a next-minor `2` branch and only have a next-patch `2.1` branch
+$modulesWithoutNextMinorBranch = [
+    'bringyourownideas' => [
+        'silverstripe-maintenance',
+        'silverstripe-composer-update-checker',
+        'silverstripe-composer-security-checker',
+    ],
+    'silverstripe' => [
+        'silverstripe-lumberjack'
+    ],
+    'lekoala' => [
+        'silverstripe-debugbar'
+    ],
+];
+
 $modules = [
     'regular' => [
         'bringyourownideas' => [
@@ -33,7 +57,6 @@ $modules = [
             'cwp-starter-theme',
             'cwp-watea-theme',
             'cwp-theme-default',
-            'silverstripe-activedirectory',
             'silverstripe-akismet',
             'silverstripe-auditor',
             'silverstripe-blog',
@@ -51,10 +74,7 @@ $modules = [
             'silverstripe-comments',
             'silverstripe-content-widget',
             'silverstripe-contentreview',
-            'silverstripe-controllerpolicy',
             'silverstripe-crontask',
-            'silverstripe-dms',
-            'silverstripe-dms-cart',
             'silverstripe-documentconverter',
             'silverstripe-elemental-blocks',
             'silverstripe-elemental-bannerblock',
@@ -88,15 +108,10 @@ $modules = [
             'silverstripe-sitewidecontent-report',
             'silverstripe-spamprotection',
             'silverstripe-spellcheck',
-            'silverstripe-sqlite3',
-            'silverstripe-staticpublishqueue',
             'silverstripe-subsites',
             'silverstripe-tagfield',
             'silverstripe-taxonomy',
-            'silverstripe-translatable',
-            'silverstripe-upgrader',
             'silverstripe-userforms',
-            'silverstripe-versionfeed',
             'silverstripe-widgets',
             'silverstripe-mfa',
             'silverstripe-totp-authenticator',
@@ -116,6 +131,24 @@ $modules = [
             'silverstripe-versionedfiles',
         ],
     ],
+    // TODO: I haven't migrated over all ss3 modules into here yet, only some of them
+    'ss3' => [
+        'silverstripe' => [
+            'silverstripe-activedirectory',
+            'silverstripe-dms',
+            'silverstripe-dms-cart',
+            'silverstripe-secureassets',
+            'silverstripe-staticpublishqueue',
+            'silverstripe-translatable',
+        ],
+        'symbiote' => [
+            'silverstripe-versionedfiles',
+        ],
+    ],
+    'legacy' => [
+        'silverstripe-controllerpolicy',
+        'silverstripe-sqlite3',
+    ],
     'tooling' => [
         'lekoala' => [
             'silverstripe-debugbar',
@@ -123,6 +156,7 @@ $modules = [
         'silverstripe' => [
             'cow',
             'eslint-config',
+            'silverstripe-upgrader',
             'sspak',
             'vendor-plugin',
             'webpack-config',
