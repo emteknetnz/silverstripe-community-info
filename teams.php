@@ -40,7 +40,11 @@ $teams = [
         'pjayme',
         'StephenMakrogianni',
         'Jianbinzhu',
-        'amolswnz'
+        'amolswnz',
+        'andrewandante',
+        'scott-nz',
+        'mark-a-j-adriano',
+        'shoosah'
     ],
     'tsp_ops' => [
         'indygriffiths',
