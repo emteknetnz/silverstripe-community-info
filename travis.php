@@ -53,9 +53,9 @@ function createTravisCsv() {
     foreach ($modules[$moduleType] as $account => $repos) {
         foreach ($repos as $repo) {
             $branchData = [
-                'major-latest' => ['branch' => -1, 'number' => '', 'state' => 'unknown', 'commit' => ''],
-                'minor-latest' => ['branch' => -1, 'number' => '', 'state' => 'unknown', 'commit' => ''],
-                'minor-previous'=> ['branch' => -1, 'number' => '', 'state' => 'unknown', 'commit' => ''],
+                'next-minor' => ['branch' => -1, 'number' => '', 'state' => 'unknown', 'commit' => ''],
+                'next-patch' => ['branch' => -1, 'number' => '', 'state' => 'unknown', 'commit' => ''],
+                'prev-minor'=> ['branch' => -1, 'number' => '', 'state' => 'unknown', 'commit' => ''],
             ];
             // branches
             if (!isset($repoIds[$repo])) {
@@ -87,17 +87,17 @@ function createTravisCsv() {
                 sort($branchNames);
                 // major
                 foreach ($branchNames as $branch) {
-                    if (preg_match('#^[1-9]$#', $branch) && $branch > $branchData['major-latest']['branch']) {
-                        $branchData['major-latest']['branch'] = $branch;
+                    if (preg_match('#^[1-9]$#', $branch) && $branch > $branchData['next-minor']['branch']) {
+                        $branchData['next-minor']['branch'] = $branch;
                     }
                 }
                 // minors
                 foreach ($branchNames as $branch) {
                     if (preg_match('#^([1-9])\.([0-9]{1,2})$#', $branch, $m)) {
-                        if ($m[1] == $branchData['major-latest']['branch']) {
-                            if ($branch > $branchData['minor-latest']['branch']) {
-                                $branchData['minor-previous']['branch'] = $branchData['minor-latest']['branch'];
-                                $branchData['minor-latest']['branch'] = $branch;
+                        if ($m[1] == $branchData['next-minor']['branch']) {
+                            if ($branch > $branchData['next-patch']['branch']) {
+                                $branchData['prev-minor']['branch'] = $branchData['next-patch']['branch'];
+                                $branchData['next-patch']['branch'] = $branch;
                             }
                         }
                     }
@@ -114,7 +114,7 @@ function createTravisCsv() {
                         echo "Using local data for $filename\n";
                         $data = json_decode(file_get_contents($filename));
                     } else {
-                        $url = "/repo/$repoId/builds?branch.name=$branch&event_type=push,api&sort_by=number:desc&limit=1";
+                        $url = "/repo/$repoId/builds?branch.name=$branch&event_type=push,api,cron&sort_by=number:desc&limit=1";
                         $data = fetchRest($url, $account, $repo, $extra, true);
                     }
                     if (!$data || empty($data->builds)) {
@@ -129,12 +129,12 @@ function createTravisCsv() {
                 'account' => $account,
                 'repo' => $repo,
                 'link' => "https://travis-ci.com/github/$account/$repo/branches",
-                'majorLatestBranch' => $branchData['major-latest']['branch'],
-                'majorLatestStatus' => $branchData['major-latest']['state'],
-                'minorLatestBranch' => $branchData['minor-latest']['branch'],
-                'minorLatestStatus' => $branchData['minor-latest']['state'],
-                'minorPrevBranch' => $branchData['minor-previous']['branch'],
-                'minorPrevStatus' => $branchData['minor-previous']['state'],
+                'nextMinorBranch' => $branchData['next-minor']['branch'],
+                'nextMinorStatus' => $branchData['next-minor']['state'],
+                'nextPatchBranch' => $branchData['next-patch']['branch'],
+                'nextPatchStatus' => $branchData['next-patch']['state'],
+                'prevMinorBranch' => $branchData['prev-minor']['branch'],
+                'prevMinorStatus' => $branchData['prev-minor']['state'],
             ];
         }
     }
