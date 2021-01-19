@@ -12,7 +12,11 @@ function createStandardsCsv() {
         foreach ($modules[$moduleType] as $account => $repos) {
             foreach ($repos as $repo) {
                 foreach (['next-minor', 'next-patch'] as $branchType) {
-                    if ($branchType == 'next-minor' && in_array($repo, $modulesWithoutNextMinorBranch[$account])) {
+                    if (
+                        $branchType == 'next-minor' &&
+                        isset($modulesWithoutNextMinorBranch[$account]) &&
+                        in_array($repo, $modulesWithoutNextMinorBranch[$account])
+                    ) {
                         continue;
                     }
                     $varsList[] = [$account, $repo, $branchType];
