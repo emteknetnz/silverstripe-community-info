@@ -1,11 +1,16 @@
 <?php
 
+// https://www.silverstripe.org/software/addons/silverstripe-commercially-supported-module-list/
+// also went through composer.lock of cwp-recipe-kitchen-sink installer
+// there may be a couple of unintentional omissions, or modules that are inluded here that aren't actually supported
+
 // modules with custom travis files that are excluded from travis shared config check
 $modulesWithCustomTravis = [
     'silverstripe' => [
-        'cwp-starter-theme',
+        'cwp-starter-theme', // watea-theme uses shared config
         'silverstripe-upgrader',
         'sspak',
+        'MinkFacebookWebDriver'
     ]
 ];
 
@@ -15,11 +20,6 @@ $modulesWithoutNextMinorBranch = [
         'silverstripe-maintenance',
         'silverstripe-composer-update-checker',
         'silverstripe-composer-security-checker',
-    ],
-    'silverstripe' => [
-        'silverstripe-selectupload',
-        'silverstripe-lumberjack',
-        'silverstripe-gridfieldqueuedexport',
     ],
     'lekoala' => [
         'silverstripe-debugbar',
@@ -50,8 +50,6 @@ $modules = [
             'cwp-core',
             'cwp-installer',
             'cwp-pdfexport',
-            'cwp-recipe-basic',
-            'cwp-recipe-blog',
             'cwp-recipe-cms',
             'cwp-recipe-core',
             'cwp-recipe-search',
@@ -67,6 +65,7 @@ $modules = [
             'silverstripe-asset-admin',
             'silverstripe-assets',
             'silverstripe-campaign-admin',
+            'silverstripe-ckan-registry',
             'silverstripe-cms',
             'silverstripe-config',
             'silverstripe-errorpage',
@@ -111,6 +110,7 @@ $modules = [
             'silverstripe-subsites',
             'silverstripe-tagfield',
             'silverstripe-taxonomy',
+            'silverstripe-textextraction', // only a supported dependency, though ...
             'silverstripe-userforms',
             'silverstripe-widgets',
             'silverstripe-mfa',
@@ -118,21 +118,30 @@ $modules = [
             'silverstripe-webauthn-authenticator',
             'silverstripe-login-forms',
             'silverstripe-security-extensions',
-            // not in commercially supported list, though is in cwp
-            'silverstripe-versionfeed',
+            'silverstripe-upgrader',
+            'silverstripe-versionfeed', // not in commercially supported list, though is in cwp
+            'sspak',
+            'vendor-plugin',
         ],
         'silverstripe-themes' => [
             'silverstripe-simple',
         ],
         'symbiote' => [
             'silverstripe-advancedworkflow',
+            'silverstripe-gridfieldextensions', // only a supported dependency, though ...
             'silverstripe-multivaluefield',
             'silverstripe-queuedjobs',
         ],
+        'tractorcow' => [
+            // 'classproxy', // supported dependency
+            'silverstripe-fluent', // only a supported dependency, though in kitchen-sink
+            // 'silverstripe-proxy-db', // supported dependency
+        ]
     ],
-    // TODO: I haven't migrated over all ss3 modules into here yet, only some of them
     'ss3' => [
         'silverstripe' => [
+            'cwp-recipe-basic',
+            'cwp-recipe-blog',
             'silverstripe-activedirectory',
             'silverstripe-dms',
             'silverstripe-dms-cart',
@@ -145,9 +154,12 @@ $modules = [
         ],
     ],
     'legacy' => [
-        'silverstripe-controllerpolicy',
-        'silverstripe-elemental-blocks',
-        'silverstripe-sqlite3',
+        'silverstripe' => [
+            'cwp-agencyextensions',
+            'silverstripe-controllerpolicy',
+            'silverstripe-elemental-blocks',
+            'silverstripe-sqlite3',
+        ]
     ],
     'tooling' => [
         'lekoala' => [
@@ -156,9 +168,12 @@ $modules = [
         'silverstripe' => [
             'cow',
             'eslint-config',
-            'silverstripe-upgrader',
-            'sspak',
-            'vendor-plugin',
+            'MinkFacebookWebDriver',
+            'recipe-testing',
+            'silverstripe-behat-extension',
+            'silverstripe-serve',
+            'silverstripe-travis-shared',
+            'silverstripe-testsession',
             'webpack-config',
         ]
     ],
