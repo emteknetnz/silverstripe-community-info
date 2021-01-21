@@ -93,7 +93,7 @@ function createStandardsCsv() {
                 $content = base64_decode($data->content);
                 $arr['travisFileExists'] = 'yes';
                 $arr['travisSharedConfig'] = strpos($content, 'silverstripe/silverstripe-travis-shared') !== false ? 'yes' : 'no';
-                if (in_array($repo, $modulesWithCustomTravis[$account])) {
+                if (isset($modulesWithCustomTravis[$account]) && in_array($repo, $modulesWithCustomTravis[$account])) {
                     $arr['travisSharedConfig'] = 'custom';
                 }
                 if ($arr['travisSharedConfig'] == 'yes') {
@@ -117,6 +117,20 @@ function createStandardsCsv() {
                 $b = strpos($content, 'sminnee/phpunit') !== false || strpos($content, 'silverstripe/recipe-testing') !== false;
                 $arr['composerSminneePhpunit'] = $b ? 'yes' : 'no';
             }
+            $branch = str_replace('dev-', '', str_replace('.x-dev', '', $latestBranch));
+            $readmeTravisKeyStrs = [
+                'readmeTravisComBadge' => "(https://api.travis-ci.com/$account/$repo.svg?branch=$branch)",
+            ];
+            $data = fetchRestOrUseLocal("/repos/$account/$repo/contents/README.md?ref=$ref", $account, $repo, "standards-readme-md-$ref");
+            if (!$data || !isset($data->content)) {
+                $data = fetchRestOrUseLocal("/repos/$account/$repo/contents/readme.md?ref=$ref", $account, $repo, "standards-readme-lc-md-$ref");
+            }
+            if ($data && isset($data->content)) {
+                $content = base64_decode($data->content);
+                foreach ($readmeTravisKeyStrs as $key => $str) {
+                    $arr[$key] = strpos($content, $str) !== false ? 'yes' : 'no';
+                }
+            }
             $compareKeyValues = [
                 'compareMergeUp' => '',
                 'compareUrl' => '',
@@ -139,7 +153,8 @@ function createStandardsCsv() {
             array_keys($travisKeyRxs),
             array_keys($travisKeyStrs),
             array_keys($composerKeyValues),
-            array_keys($compareKeyValues)
+            array_keys($compareKeyValues),
+            array_keys($readmeTravisKeyStrs)
         );
         $row = [];
         foreach ($keys as $key) {
