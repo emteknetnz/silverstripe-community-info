@@ -128,6 +128,7 @@ function createTravisCsv() {
             $rows[] = [
                 'account' => $account,
                 'repo' => $repo,
+                'repoId' => $repoId,
                 'link' => "https://travis-ci.com/github/$account/$repo/branches",
                 'nextMinorBranch' => $branchData['next-minor']['branch'],
                 'nextMinorStatus' => $branchData['next-minor']['state'],

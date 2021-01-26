@@ -346,3 +346,50 @@ function fetchRest($remotePath, $account, $repo, $extra, $travis = false) {
     }
     return $json;
 }
+
+function postRest($remotePath, $postBody, $travis = false) {
+    $remoteBase = "https://api.github.com";
+    if ($travis) {
+        $remoteBase = "https://api.travis-ci.com";
+    }
+    $remotePath = str_replace($remoteBase, '', $remotePath);
+    $remotePath = ltrim($remotePath, '/');
+    if ($travis) {
+        // travis
+        $url = "${remoteBase}/${remotePath}";
+    } else {
+        echo "POST not yet implemented for github.com api\n";
+        die;
+    }
+    $label = str_replace($remoteBase, '', $url);
+    echo "POSTING to ${label}\n";
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    if ($travis) {
+        $headers = [
+            'Travis-API-Version: 3',
+            'Content-Type: application/json',
+            'Authorization: token "' . getCredentials(false, true) . '"'
+        ];
+    } else {
+        // github
+        $headers = [
+            'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:28.0) Gecko/20100101 Firefox/28.0'
+        ];
+        curl_setopt($ch, CURLOPT_USERPWD, getCredentials());
+    }
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $postBody); 
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    waitUntilCanFetch();
+    $s = curl_exec($ch);
+    curl_close($ch);
+    $json = json_decode($s);
+    if (!is_array($json) && !is_object($json)) {
+        echo "Error posting data\n";
+        return null;
+    }
+    return $json;
+}
