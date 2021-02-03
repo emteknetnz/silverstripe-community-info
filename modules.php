@@ -91,6 +91,7 @@ $modules = [
             'silverstripe-mimevalidator',
             'silverstripe-postgresql',
             'silverstripe-realme',
+            'silverstripe-session-manager',
             'recipe-authoring-tools',
             'recipe-blog',
             'recipe-collaboration',
