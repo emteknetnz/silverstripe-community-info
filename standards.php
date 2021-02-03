@@ -37,6 +37,9 @@ function createStandardsCsv() {
         $nextMinorRx = '#^([1-9])$#';
         $nextPatchRx = '#^([1-9])\.([0-9])$#';
         foreach ($data as $branch) {
+            if (!$branch) {
+                continue;
+            }
             $name = $branch->name;
             $rx = $branchType == 'next-minor' ? $nextMinorRx : $nextPatchRx;
             if (!preg_match($rx, $name) || $name <= $ref) {
