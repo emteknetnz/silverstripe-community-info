@@ -243,7 +243,7 @@ function pullRequestFileCounts($files) {
     return $data;
 }
 
-function fetchGraphQL($query, $account, $repo, $extra, $lastCursor) {
+function fetchGraphQL($query, $account, $repo, $extra, $lastCursor = '') {
     $endpoint = 'https://api.github.com/graphql';
     $json = buildGraphQLQueryJson($query);
     echo "Fetching data for $account/$repo $extra $lastCursor\n";
