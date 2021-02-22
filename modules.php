@@ -33,9 +33,9 @@ $modules = [
             'silverstripe-composer-update-checker',
             'silverstripe-composer-security-checker',
         ],
-        'dnadesign' => [
-            'silverstripe-elemental',
-        ],
+        // 'dnadesign' => [
+        //     'silverstripe-elemental',
+        // ],
         'silverstripe' => [
             'recipe-cms',
             'recipe-core',
@@ -77,6 +77,7 @@ $modules = [
             'silverstripe-contentreview',
             'silverstripe-crontask',
             'silverstripe-documentconverter',
+            'silverstripe-elemental',
             'silverstripe-elemental-bannerblock',
             'silverstripe-elemental-fileblock',
             'silverstripe-environmentcheck',
